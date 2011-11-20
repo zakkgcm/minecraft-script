@@ -12,8 +12,13 @@
 # -j version | "initializes" the specified version
 # -g         | launches minecraft using jdb (java debugger)
 
+# user settings -----
 # path to launcher (Minecraft.jar)
-LAUNCHERJAR=$HOME/gam/minecraft/Minecraft.jar
+LAUNCHERJAR="$HOME/gam/minecraft/Minecraft.jar"
+
+# desired minecraft window size
+WINWIDTH=1000
+WINHEIGHT=500
 
 #without this input is all wacky for some reason
 LANG=UTF8
@@ -57,7 +62,7 @@ while true; do
 
         if [[ $WININFO =~ 'IsViewable' ]]; then
             WINID=$(echo $WININFO | awk '/Window id:/ {print $4}')
-            xdotool windowsize --sync $WINID 1000 580 # adjust window size here
+            xdotool windowsize --sync $WINID $WINWIDTH $WINHEIGHT # adjust window size here
             break
         fi
     fi
