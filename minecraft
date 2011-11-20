@@ -1,0 +1,71 @@
+#!/bin/sh
+
+# -----
+# minecraft launcher script for ganoo plus linucks
+# copyleft (c) cheeseum, released under wtfpl
+#
+# place your jars in ~/.minecraft/bin named as minecraft-VERSION.jar
+# mod folders in ~/.minecraft as mods-VERSION
+# after an "initialization" with -j, all subsequent launches will launch that version
+#
+# available args:
+# -j version | "initializes" the specified version
+# -g         | launches minecraft using jdb (java debugger)
+
+# my launcher jar is in here *shrug*
+cd $HOME/gam/minecraft
+
+#without this input is all wacky for some reason
+LANG=UTF8
+
+JAR=""
+MODS=""
+VER=""
+
+# directories
+MCDIR="$HOME/.minecraft/"
+MODDIR="${MCDIR%/*}/mods/"
+BINDIR="${MCDIR%/*}/bin/"
+LAUNCHJAR="${BINDIR%/*}/minecraft.jar"
+
+# this renames the specified version jar to minecraft.jar
+if [ "$1" = "-j" ]; then
+    shift
+
+    # place additional versions here
+    case $1 in 
+        "technic" ) VER="1.8.1-technic" ;;
+        "1.8" ) VER="1.8.1-modded" ;;
+        "1.9" ) VER="1.9-pre5" ;;
+        "1.0" ) VER="1.0.0" ;;
+        *) echo "lol wtf u doin?" && exit 1 ;;
+    esac
+
+    JAR="${BINDIR%/*}/minecraft-${VER}.jar"
+    MODS="${MCDIR%/*}/mods-${VER}"
+    cp "$JAR" "$LAUNCHJAR"
+    rm -r "${MODDIR%/*}" && mkdir -p "${MODDIR%/*}" && cp -R "$MODS"/* "${MODDIR%/*}"
+
+    shift
+fi
+
+# resize the minecraft window as soon as it's visible
+while true; do
+    sleep 0.5
+    if [ -n "$(pgrep -f net.minecraft.LauncherFrame)" ]; then
+        WININFO=$(xwininfo -id $(xwininfo -root -tree | grep "\"Minecraft Launcher\"" | awk '{ print $1 }'))
+
+        if [[ $WININFO =~ 'IsViewable' ]]; then
+            WINID=$(echo $WININFO | awk '/Window id:/ {print $4}')
+            xdotool windowsize --sync $WINID 1000 580 # adjust window size here
+            break
+        fi
+    fi
+done > /dev/null 2>&1 &
+
+# actually launch minecraft
+if [ "$1" = "-g" ]; then
+    exec jdb -Xmx1024M -Xms512M -classpath Minecraft.jar net.minecraft.LauncherFrame
+else
+    exec java -Xmx1024M -Xms512M -cp Minecraft.jar net.minecraft.LauncherFrame
+fi
