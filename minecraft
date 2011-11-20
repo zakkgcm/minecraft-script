@@ -12,8 +12,8 @@
 # -j version | "initializes" the specified version
 # -g         | launches minecraft using jdb (java debugger)
 
-# my launcher jar is in here *shrug*
-cd $HOME/gam/minecraft
+# path to launcher (Minecraft.jar)
+LAUNCHERJAR=$HOME/gam/minecraft/Minecraft.jar
 
 #without this input is all wacky for some reason
 LANG=UTF8
@@ -22,11 +22,11 @@ JAR=""
 MODS=""
 VER=""
 
-# directories
+# you shouldn't need to change these
 MCDIR="$HOME/.minecraft/"
 MODDIR="${MCDIR%/*}/mods/"
 BINDIR="${MCDIR%/*}/bin/"
-LAUNCHJAR="${BINDIR%/*}/minecraft.jar"
+TARGETJAR="${BINDIR%/*}/minecraft.jar"
 
 # this renames the specified version jar to minecraft.jar
 if [ "$1" = "-j" ]; then
@@ -43,7 +43,7 @@ if [ "$1" = "-j" ]; then
 
     JAR="${BINDIR%/*}/minecraft-${VER}.jar"
     MODS="${MCDIR%/*}/mods-${VER}"
-    cp "$JAR" "$LAUNCHJAR"
+    cp "$JAR" "$TARGETJAR"
     rm -r "${MODDIR%/*}" && mkdir -p "${MODDIR%/*}" && cp -R "$MODS"/* "${MODDIR%/*}"
 
     shift
@@ -65,7 +65,7 @@ done > /dev/null 2>&1 &
 
 # actually launch minecraft
 if [ "$1" = "-g" ]; then
-    exec jdb -Xmx1024M -Xms512M -classpath Minecraft.jar net.minecraft.LauncherFrame
+    exec jdb -Xmx1024M -Xms512M -classpath "$LAUNCHERJAR" net.minecraft.LauncherFrame
 else
-    exec java -Xmx1024M -Xms512M -cp Minecraft.jar net.minecraft.LauncherFrame
+    exec java -Xmx1024M -Xms512M -cp "$LAUNCHERJAR" net.minecraft.LauncherFrame
 fi
